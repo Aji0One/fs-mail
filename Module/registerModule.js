@@ -78,7 +78,7 @@ exports.forgotpassword= async (req, res) => {
 
 
     const secret= process.env.SECRET_KEY + existUser.password;
-    const token=jwt.sign(existUser,secret,{expiresIn:'15m'});
+    const token=jwt.sign(existUser,secret,{expiresIn:'10m'});
 
     const link=`https://fs-mail.onrender.com/register/resetpassword/${existUser._id}/${token}`;
     

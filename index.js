@@ -6,6 +6,7 @@ const productRouter= require('./Router/productRouter');
 const registerRouter= require('./Router/registerRouter');
 const cors= require("cors");
 
+
 dotenv.config();
 const app= express();
 
@@ -13,7 +14,8 @@ mongo.Connect();
 
 app.use(cors());
 app.use(express.json())
-
+app.set("view engine","ejs");
+app.use(express.urlencoded({extended: false}));
 app.use('/register',registerRouter);
 
 app.use("/",auth.authenticUser);

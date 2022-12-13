@@ -80,7 +80,7 @@ exports.forgotpassword= async (req, res) => {
 
     const secret= process.env.SECRET_KEY + existUser.password;
     const token=jwt.sign(existUser,secret,{expiresIn:'15m'});
-    const link=`http://localhost:3002/register/resetpassword/${existUser._id}/${token}`;
+    const link=`https://fs-mail.onrender.com/register/resetpassword/${existUser._id}/${token}`;
     
     var mailOption={
         from:'ajithkumarmspva@gmail.com',
@@ -89,7 +89,7 @@ exports.forgotpassword= async (req, res) => {
         html:`<p>The password reset link as been provided below.</p>
                 <a href=${link}>click here</a> `
     }
-    console.log(link);
+    // console.log(link);
     transporter.sendMail(mailOption,(err,info)=>{
         if(err){
             console.error(err);
@@ -118,7 +118,7 @@ exports.resetpassword= async (req,res)=>{
     const secret=process.env.SECRET_KEY + user[0].password;
     try{
         const payload= jwt.verify(token,secret);
-        res.send('resetpassword');
+        res.render('resetpassword',{status: "Not Verified"});
     }catch(err){
         console.error(err);
         res.send(err.message);
@@ -129,7 +129,8 @@ exports.resetpassword= async (req,res)=>{
 
 exports.resetpasswordpost= async (req,res) => {
     const {id, token}= req.params;
-    const{password,confirmPassword}= req.body;
+    var {password,confirmPassword}= req.body;
+
     const existUser= await mongo.selectedDb.collection('users').find().toArray();
    
     const user= existUser.filter((ele) => id==ele._id);
@@ -141,18 +142,20 @@ exports.resetpasswordpost= async (req,res) => {
     const secret=process.env.SECRET_KEY + user[0].password;
     try{
         const payload= jwt.verify(token,secret);
+        
         const isSamePassword= checkPassword(password,confirmPassword);
         if(!isSamePassword){
             res.status(400).send({msg:"password doesn't match"});
         }
-        else delete req.body.confirmPassword;
+        else delete confirmPassword;
 
         //password hashing
-        const randomString= await bcrypt.genSalt(10);
-        password= await bcrypt.hash(req.body.password,randomString);
-
+        const randomStr= await bcrypt.genSalt(10);
+        password= await bcrypt.hash(password,randomStr);
+        console.log(password);
+        await mongo.selectedDb.collection("users").findOneAndUpdate({_id: id},{$set:{password:password}});
         user.password= password;
-        res.send(user[0]);
+        res.render("resetpassword",{status:"verified"})
     }catch(err){
         console.error(err);
         res.send(err.message);

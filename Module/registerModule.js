@@ -41,17 +41,16 @@ const checkPassword =(password,confirmPassword) => {
 
 exports.signin= async (req,res,next) => {
     //req.body. email || password
-    console.log(req.body.email);
+   
     //Email Verification
     const existUser= await mongo.selectedDb.collection("users").findOne({email:req.body.email});
-        res.status(200).send({body: existUser})
     if(!existUser){
         res.status(400).send({msg:"Email doesn't match"});
     }
 
     //password incorrect
     const isPassword= await bcrypt.compare(req.body.password,existUser.password);
-    console.log(isPassword);
+   
     if(!isPassword){
         res.status(400).send({msg:"Incorrect Password"});
     }
